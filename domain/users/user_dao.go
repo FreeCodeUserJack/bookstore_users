@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 
+	"github.com/FreeCodeUserJack/bookstore_users/util/date_utils"
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
 )
 
@@ -27,6 +28,8 @@ func (u *User) Save() *errors.RestError {
 		}
 		return errors.NewBadRequestError(fmt.Sprintf("user with id %d already exists", u.Id), "bad request")
 	}
+
+	u.DateCreated = date_utils.GetTimeNowString()
 
 	usersDB[u.Id] = u
 	return nil

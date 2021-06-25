@@ -34,7 +34,7 @@ func GetUser(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	var user users.User
 
-	if err := c.ShouldBindJSON(user); err != nil {
+	if err := c.ShouldBindJSON(&user); err != nil {
 		restErr := errors.NewBadRequestError("invalid json body", err.Error())
 		c.JSON(restErr.Status, restErr)
 		return
