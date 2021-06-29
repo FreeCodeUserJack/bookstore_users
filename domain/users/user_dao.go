@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/FreeCodeUserJack/bookstore_users/datasources/mysql/users_db"
-	"github.com/FreeCodeUserJack/bookstore_users/util/date_utils"
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
 	"github.com/FreeCodeUserJack/bookstore_users/util/mysql_utils"
 )
@@ -41,9 +40,6 @@ func GetUserById(userId int64) (*User, *errors.RestError) {
 }
 
 func (u *User) Save() *errors.RestError {
-	u.DateCreated = date_utils.GetTimeNowString()
-	u.Status = "active"
-	
 	stmt, err := users_db.Client.Prepare(queryInsertUser)
 	if err != nil {
 		return errors.NewInternalServerError("could not prepare query statement", err.Error())
@@ -103,7 +99,7 @@ func DeleteById(userId int64) *errors.RestError {
 	return nil
 }
 
-func GetUserByStatus(status string) ([]*User, *errors.RestError) {
+func GetUserByStatus(status string) ([]User, *errors.RestError) {
 	stmt, err := users_db.Client.Prepare(queryFindUserByStatus)
 	if err != nil {
 		return nil, mysql_utils.ParseError(err)
@@ -116,15 +112,19 @@ func GetUserByStatus(status string) ([]*User, *errors.RestError) {
 	}
 	defer rows.Close()
 
-	usersRes := make([]*User, 0)
+	usersRes := make([]User, 0)
 
 	for rows.Next() {
-		user := &User{}
+		user := User{}
 		err := rows.Scan(&user.Id, &user.Firstname, &user.Lastname, &user.Email, &user.DateCreated, &user.Status)
 		if err != nil {
 			return nil, mysql_utils.ParseError(err)
 		}
 		usersRes = append(usersRes, user)
+	}
+
+	if len(usersRes) == 0 {
+		return nil, errors.NewNotFoundError(fmt.Sprintf("status: %s not found", status), "no users found")
 	}
 
 	return usersRes, nil

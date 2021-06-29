@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/FreeCodeUserJack/bookstore_users/domain/users"
+	"github.com/FreeCodeUserJack/bookstore_users/util/date_utils"
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
 )
 
@@ -12,6 +13,9 @@ func CreateUser(user users.User) (*users.User, *errors.RestError) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
+
+	user.DateCreated = date_utils.GetDbTimeNowString()
+	user.Status = users.StatusActive
 
 	if err := user.Save(); err != nil {
 		return nil, err
@@ -74,6 +78,6 @@ func DeleteUser(userId int64) *errors.RestError {
 	return users.DeleteById(userId)
 }
 
-func GetUserByStatus(status string) ([]*users.User, *errors.RestError) {
+func Search(status string) ([]users.User, *errors.RestError) {
 	return users.GetUserByStatus(status)
 }

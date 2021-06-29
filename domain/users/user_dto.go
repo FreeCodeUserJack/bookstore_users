@@ -6,6 +6,9 @@ import (
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
 )
 
+const (
+	StatusActive = "active"
+)
 
 type User struct {
 	Id          int64  `json:"id"`
@@ -18,10 +21,17 @@ type User struct {
 }
 
 func (u *User) Validate() *errors.RestError {
-	u.Email = strings.TrimSpace(strings.ToLower(u.Email))
+	u.Firstname = strings.TrimSpace(u.Firstname)
+	u.Lastname = strings.TrimSpace(u.Lastname)
 
+	u.Email = strings.TrimSpace(strings.ToLower(u.Email))
 	if u.Email == "" {
 		return errors.NewBadRequestError("invalid email address", "bad user request")
+	}
+
+	u.Password = strings.TrimSpace(u.Password)
+	if u.Password == "" {
+		return errors.NewBadRequestError("password is not valid", "invalid passowrd")
 	}
 
 	return nil

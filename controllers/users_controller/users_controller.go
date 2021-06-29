@@ -101,15 +101,15 @@ func getUserId(userId string) (int64, *errors.RestError) {
 	return userIdInt, nil
 }
 
-func GetUserByStatus(c *gin.Context) {
-	status := strings.TrimSpace(c.Param("status"))
+func Search(c *gin.Context) {
+	status := strings.TrimSpace(c.Query("status"))
 	if status == "" {
 		err := errors.NewBadRequestError("status must be give, cannot be empty", "bad request")
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	users, err := services.GetUserByStatus(status)
+	users, err := services.Search(status)
 	if err != nil {
 		c.JSON(err.Status, err)
 		return
