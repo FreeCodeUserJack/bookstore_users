@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/FreeCodeUserJack/bookstore_users/domain/users"
+	"github.com/FreeCodeUserJack/bookstore_users/util/crypto_utils"
 	"github.com/FreeCodeUserJack/bookstore_users/util/date_utils"
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
 )
@@ -16,6 +17,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestError) {
 
 	user.DateCreated = date_utils.GetDbTimeNowString()
 	user.Status = users.StatusActive
+	user.Password = crypto_utils.GetMd5(user.Password)
 
 	if err := user.Save(); err != nil {
 		return nil, err
@@ -78,6 +80,6 @@ func DeleteUser(userId int64) *errors.RestError {
 	return users.DeleteById(userId)
 }
 
-func Search(status string) ([]users.User, *errors.RestError) {
+func Search(status string) (users.Users, *errors.RestError) {
 	return users.GetUserByStatus(status)
 }
