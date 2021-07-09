@@ -9,8 +9,22 @@ import (
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
 )
 
+var (
+	UsersService usersServiceInterface = &usersService{}
+)
 
-func CreateUser(user users.User) (*users.User, *errors.RestError) {
+type usersService struct {
+}
+
+type usersServiceInterface interface {
+	CreateUser(users.User) (*users.User, *errors.RestError)
+	GetUserById(int64) (*users.User, *errors.RestError)
+	UpdateUser(bool, users.User) (*users.User, *errors.RestError)
+	DeleteUser(int64) *errors.RestError
+	SearchUser(string) (users.Users, *errors.RestError)
+}
+
+func (s *usersService) CreateUser(user users.User) (*users.User, *errors.RestError) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -26,7 +40,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestError) {
 	return &user, nil
 }
 
-func GetUserById(userId int64) (*users.User, *errors.RestError) {
+func (s *usersService) GetUserById(userId int64) (*users.User, *errors.RestError) {
 	if userId <= 0 {
 		return nil, errors.NewBadRequestError("userId cannot be <= 0", "bad_request")
 	}
@@ -34,8 +48,8 @@ func GetUserById(userId int64) (*users.User, *errors.RestError) {
 	return users.GetUserById(userId)
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestError) {
-	savedUser, err := GetUserById(user.Id)
+func (s *usersService) UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestError) {
+	savedUser, err := UsersService.GetUserById(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -76,10 +90,10 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestError
 	return savedUser, nil
 }
 
-func DeleteUser(userId int64) *errors.RestError {
+func (s *usersService) DeleteUser(userId int64) *errors.RestError {
 	return users.DeleteById(userId)
 }
 
-func Search(status string) (users.Users, *errors.RestError) {
+func (s *usersService) SearchUser(status string) (users.Users, *errors.RestError) {
 	return users.GetUserByStatus(status)
 }
