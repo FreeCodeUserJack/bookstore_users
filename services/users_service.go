@@ -22,6 +22,7 @@ type usersServiceInterface interface {
 	UpdateUser(bool, users.User) (*users.User, *errors.RestError)
 	DeleteUser(int64) *errors.RestError
 	SearchUser(string) (users.Users, *errors.RestError)
+	LoginUser(users.UserLoginRequest) (*users.User, *errors.RestError)
 }
 
 func (s *usersService) CreateUser(user users.User) (*users.User, *errors.RestError) {
@@ -96,4 +97,8 @@ func (s *usersService) DeleteUser(userId int64) *errors.RestError {
 
 func (s *usersService) SearchUser(status string) (users.Users, *errors.RestError) {
 	return users.GetUserByStatus(status)
+}
+
+func (s *usersService) LoginUser(request users.UserLoginRequest) (*users.User, *errors.RestError) {
+	return users.FindByEmailAndPassword(request.Email, crypto_utils.GetMd5(request.Password))
 }

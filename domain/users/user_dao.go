@@ -2,10 +2,12 @@ package users
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/FreeCodeUserJack/bookstore_users/datasources/mysql/users_db"
 	"github.com/FreeCodeUserJack/bookstore_users/logger"
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
+	"github.com/FreeCodeUserJack/bookstore_users/util/mysql_utils"
 	// "github.com/FreeCodeUserJack/bookstore_users/util/mysql_utils"
 )
 
@@ -14,7 +16,8 @@ const (
 	queryGetUserById = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE id = ?;"
 	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=?, status=? WHERE id=?;"
 	queryDeleteUserById = "DELETE FROM users WHERE id=?;"
-	queryFindUserByStatus = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?;"
+	queryFindByStatus = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?;"
+	queryFindByEmailAndPassword = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE email=? AND password=? AND status=?;"
 )
 
 func GetUserById(userId int64) (*User, *errors.RestError) {
@@ -108,7 +111,7 @@ func DeleteById(userId int64) *errors.RestError {
 }
 
 func GetUserByStatus(status string) ([]User, *errors.RestError) {
-	stmt, err := users_db.Client.Prepare(queryFindUserByStatus)
+	stmt, err := users_db.Client.Prepare(queryFindByStatus)
 	if err != nil {
 		logger.Error("error when trying to Prepare stmt for SearchUser", err)
 		return nil, errors.NewInternalServerError("database error", "internal server error")
@@ -141,4 +144,28 @@ func GetUserByStatus(status string) ([]User, *errors.RestError) {
 	}
 
 	return usersRes, nil
+}
+
+func FindByEmailAndPassword(email, password string) (*User, *errors.RestError) {
+	stmt, err := users_db.Client.Prepare(queryFindByEmailAndPassword)
+	if err != nil {
+		logger.Error("could not prepare query statement for find by email/password", err)
+		return nil, errors.NewInternalServerError("database error", "internal server error")
+	}
+	defer stmt.Close()
+
+	sqlRow := stmt.QueryRow(email, password, StatusActive)
+
+	resUser := &User{}
+
+	err = sqlRow.Scan(&resUser.Id, &resUser.Firstname, &resUser.Lastname, &resUser.Email, &resUser.DateCreated, &resUser.Status)
+	if err != nil {
+		if strings.Contains(err.Error(), mysql_utils.NoUserFoundForId) {
+			return nil, errors.NewBadRequestError("no user found with given credentials", "bad request")
+		}
+		logger.Error("error when trying to get user by email and password", err)
+		return nil, errors.NewInternalServerError("database error", "internal server error")
+	}
+	
+	return resUser, nil
 }
