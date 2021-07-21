@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/FreeCodeUserJack/bookstore_oauth-common/oauth"
 	"github.com/FreeCodeUserJack/bookstore_users/domain/users"
 	"github.com/FreeCodeUserJack/bookstore_users/services"
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
@@ -13,6 +14,20 @@ import (
 
 
 func GetUser(c *gin.Context) {
+	if authErr := oauth.AuthenticateRequest(c.Request); authErr != nil {
+		c.JSON(authErr.Status(), authErr)
+		return
+	}
+
+	// this make it so that you have to have a callerId else it will error out
+	if callerId := oauth.GetCallerId(c.Request); callerId == 0 {
+		err := errors.RestError{
+			Status: http.StatusUnauthorized,
+			Message: "resource not available",
+		}
+		c.JSON(err.Status, err)
+	}
+
 	userIdInt, err := getUserId(c.Param("userId"))
 
 	if err != nil {
