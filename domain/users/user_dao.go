@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/FreeCodeUserJack/bookstore_users/datasources/mysql/users_db"
-	"github.com/FreeCodeUserJack/bookstore_users/logger"
 	"github.com/FreeCodeUserJack/bookstore_users/util/errors"
 	"github.com/FreeCodeUserJack/bookstore_users/util/mysql_utils"
+	"github.com/FreeCodeUserJack/bookstore_utils/logger"
 	// "github.com/FreeCodeUserJack/bookstore_users/util/mysql_utils"
 )
 
